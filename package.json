@@ -1,0 +1,12 @@
+{
+  "name": "image-processor",
+  "version": "1.0.0",
+  "dependencies": {
+    "ansi-colors": "^4.1.3",
+    "fancy-log": "^2.0.0",
+    "globule": "^1.3.4",
+    "p-limit": "^6.2.0",
+    "pretty-bytes": "^6.1.1",
+    "sharp": "^0.33.5"
+  }
+}
