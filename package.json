@@ -2,6 +2,10 @@
   "name": "image-processor",
   "version": "1.0.0",
   "private": true,
+  "scripts": {
+    "package-update": "curl https://get.volta.sh | bash && volta install node && volta pin node && volta install npm && volta pin npm && npx npm-check-updates -u && npm install && npm audit fix && npx depcheck",
+    "version": "volta -v && node -v && npm -v"
+  },
   "volta": {
     "node": "22.13.0",
     "npm": "11.0.0"
