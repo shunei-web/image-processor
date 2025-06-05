@@ -4,13 +4,14 @@
  * 変換効率の分析機能を提供します。
  */
 
+import { existsSync, promises as fsPromises, mkdirSync, statSync } from "fs";
+
 import colors from "ansi-colors";
 import logger from "fancy-log";
-import { existsSync, mkdirSync, statSync, promises as fsPromises } from "fs";
 import globule from "globule";
-import sharp from "sharp";
 import pLimit from "p-limit";
 import prettyBytes from "pretty-bytes";
+import sharp from "sharp";
 
 /**
  * 画像処理の結果を表す型
@@ -50,7 +51,14 @@ class ImageProcessor {
     outputSettings: {
       keepIccProfile: true,
       keepMetadata: false,
-      keepMetadataKeys: ["exif", "iptc", "xmp", "orientation", "copyright", "rating"],
+      keepMetadataKeys: [
+        "exif",
+        "iptc",
+        "xmp",
+        "orientation",
+        "copyright",
+        "rating",
+      ],
     },
     resizeConfig: {
       width: 1920,
@@ -60,10 +68,6 @@ class ImageProcessor {
       withoutEnlargement: true,
     },
     conversionFormats: {
-      // png: {
-      //   webp: { quality: 80, lossless: true },
-      //   avif: { quality: 60, lossless: true },
-      // },
       png: {
         webp: { quality: 80 },
         // avif: { quality: 60 },
@@ -126,13 +130,17 @@ class ImageProcessor {
     logger(colors.cyan(`🔍 ${imagePaths.length}個の画像を処理します`));
 
     const concurrencyLimit = pLimit(this.#config.maxConcurrency);
-    const processingTasks = imagePaths.flatMap((imagePath) => concurrencyLimit(() => this.#convertImage(imagePath)));
+    const processingTasks = imagePaths.flatMap((imagePath) =>
+      concurrencyLimit(() => this.#convertImage(imagePath))
+    );
 
     try {
       await Promise.all(processingTasks);
       logger(colors.green("✨ すべての画像処理が完了しました"));
     } catch (error) {
-      logger(colors.red(`❌ 画像処理中にエラーが発生しました: ${error.message}`));
+      logger(
+        colors.red(`❌ 画像処理中にエラーが発生しました: ${error.message}`)
+      );
       throw error;
     }
   }
@@ -150,13 +158,19 @@ class ImageProcessor {
 
     try {
       await this.#ensureOutputDirectory(imagePath);
-      const formatSettings = this.#config.conversionFormats[imageInfo.extension];
+      const formatSettings =
+        this.#config.conversionFormats[imageInfo.extension];
       const originalMetadata = await this.#extractMetadata(imagePath);
       const originalSize = statSync(imagePath).size;
 
       const conversionResults = await Promise.all(
         Object.entries(formatSettings).map(async ([format, settings]) => {
-          const result = await this.#convertToFormat(imagePath, format, settings, originalMetadata);
+          const result = await this.#convertToFormat(
+            imagePath,
+            format,
+            settings,
+            originalMetadata
+          );
           return {
             ...result,
             originalSize,
@@ -181,7 +195,9 @@ class ImageProcessor {
   async #extractMetadata(imagePath) {
     try {
       const metadata = await sharp(imagePath).metadata();
-      return this.#config.outputSettings.keepMetadata ? this.#filterMetadata(metadata) : {};
+      return this.#config.outputSettings.keepMetadata
+        ? this.#filterMetadata(metadata)
+        : {};
     } catch (error) {
       logger(colors.yellow(`⚠ メタデータの抽出に失敗: ${imagePath}`));
       return {};
@@ -196,7 +212,9 @@ class ImageProcessor {
    */
   #filterMetadata(metadata) {
     const { keepMetadataKeys } = this.#config.outputSettings;
-    return Object.fromEntries(Object.entries(metadata).filter(([key]) => keepMetadataKeys.includes(key)));
+    return Object.fromEntries(
+      Object.entries(metadata).filter(([key]) => keepMetadataKeys.includes(key))
+    );
   }
 
   /**
@@ -223,7 +241,9 @@ class ImageProcessor {
         // メタデータの保持処理
         Object.entries(metadata).forEach(([key, value]) => {
           if (processor[`set${key.charAt(0).toUpperCase() + key.slice(1)}`]) {
-            processor[`set${key.charAt(0).toUpperCase() + key.slice(1)}`](value);
+            processor[`set${key.charAt(0).toUpperCase() + key.slice(1)}`](
+              value
+            );
           }
         });
       }
@@ -254,7 +274,9 @@ class ImageProcessor {
         metadata,
       };
     } catch (error) {
-      const errorMessage = `${colors.yellow(targetFormat.toUpperCase())} 形式への変換失敗\n${error}`;
+      const errorMessage = `${colors.yellow(
+        targetFormat.toUpperCase()
+      )} 形式への変換失敗\n${error}`;
       logger(colors.red(errorMessage));
       throw new Error(errorMessage);
     }
@@ -268,8 +290,14 @@ class ImageProcessor {
     if (this.#conversionResults.length === 0) return;
 
     const reportPath = `${this.#config.outputDirectory}/conversion-report.json`;
-    const totalOriginalSize = this.#conversionResults.reduce((sum, result) => sum + result.originalSize, 0);
-    const totalConvertedSize = this.#conversionResults.reduce((sum, result) => sum + result.convertedSize, 0);
+    const totalOriginalSize = this.#conversionResults.reduce(
+      (sum, result) => sum + result.originalSize,
+      0
+    );
+    const totalConvertedSize = this.#conversionResults.reduce(
+      (sum, result) => sum + result.convertedSize,
+      0
+    );
 
     const report = {
       timestamp: new Date().toISOString(),
@@ -279,8 +307,10 @@ class ImageProcessor {
         totalConvertedSize: prettyBytes(totalConvertedSize),
         averageCompressionRatio:
           (
-            this.#conversionResults.reduce((sum, result) => sum + result.compressionRatio, 0) /
-            this.#conversionResults.length
+            this.#conversionResults.reduce(
+              (sum, result) => sum + result.compressionRatio,
+              0
+            ) / this.#conversionResults.length
           ).toFixed(1) + "%",
       },
       details: this.#conversionResults.map((result) => ({
@@ -320,7 +350,9 @@ class ImageProcessor {
         mkdirSync(outputDir, { recursive: true });
         logger(`📁 出力ディレクトリを作成: ${colors.green(outputDir)}`);
       } catch (error) {
-        const errorMessage = `ディレクトリ作成失敗 ${colors.yellow(outputDir)}\n${error}`;
+        const errorMessage = `ディレクトリ作成失敗 ${colors.yellow(
+          outputDir
+        )}\n${error}`;
         logger(colors.red(errorMessage));
         throw new Error(errorMessage);
       }
@@ -347,7 +379,10 @@ class ImageProcessor {
    */
   #parseImagePath(imagePath) {
     const extensions = Object.keys(this.#config.conversionFormats);
-    const pattern = new RegExp(`\\/([^\\/]+)\\.(${extensions.join("|")})$`, "i");
+    const pattern = new RegExp(
+      `\\/([^\\/]+)\\.(${extensions.join("|")})$`,
+      "i"
+    );
     const match = imagePath.match(pattern);
 
     return match
@@ -367,11 +402,20 @@ class ImageProcessor {
    */
   #createOutputPath(sourcePath, newFormat) {
     const lastDot = sourcePath.lastIndexOf(".");
-    const lastSlash = Math.max(sourcePath.lastIndexOf("/"), sourcePath.lastIndexOf("\\"));
+    const lastSlash = Math.max(
+      sourcePath.lastIndexOf("/"),
+      sourcePath.lastIndexOf("\\")
+    );
 
-    let outputPath = sourcePath.replace(this.#config.sourceDirectory, this.#config.outputDirectory);
+    let outputPath = sourcePath.replace(
+      this.#config.sourceDirectory,
+      this.#config.outputDirectory
+    );
 
-    outputPath = lastDot === -1 || lastSlash > lastDot ? outputPath : outputPath.slice(0, lastDot + 1);
+    outputPath =
+      lastDot === -1 || lastSlash > lastDot
+        ? outputPath
+        : outputPath.slice(0, lastDot + 1);
 
     return `${outputPath}.${newFormat}`;
   }
@@ -379,4 +423,4 @@ class ImageProcessor {
 
 export default ImageProcessor;
 
-const imageProcessor = new ImageProcessor();
+new ImageProcessor();
