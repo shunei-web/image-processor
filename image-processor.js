@@ -34,14 +34,18 @@ class ImageProcessor {
 
   #config;
 
-  constructor(customConfig = {}) {
-    this.#config = {
+  constructor(config) {
+    this.#config = config;
+  }
+
+  static async create(customConfig = {}) {
+    const config = {
       ...ImageProcessor.#DEFAULT_CONFIG,
       ...customConfig,
     };
-    console.log(this.#config);
-
-    this.#initialize();
+    const processor = new ImageProcessor(config);
+    await processor.#initialize();
+    return processor;
   }
 
   async #initialize() {
@@ -50,10 +54,12 @@ class ImageProcessor {
     for (const sourcePath of targetImages) {
       const imageInfo = this.#parseImagePath(sourcePath);
       if (!imageInfo) {
-        throw new Error(`無効な画像パス: ${sourcePath}`);
+        logger(colors.red(`無効な画像パス: ${sourcePath}`));
+        continue;
       }
       const formatSettings =
         this.#config.conversionFormats[imageInfo.extension];
+      if (!formatSettings) continue;
       for (const [format, settings] of Object.entries(formatSettings)) {
         promises.push(this.#convertToFormat(sourcePath, format, settings));
       }
@@ -78,7 +84,9 @@ class ImageProcessor {
     try {
       const processor = sharp(sourcePath);
 
-      processor.keepIccProfile();
+      if (typeof processor.keepIccProfile === "function") {
+        processor.keepIccProfile();
+      }
 
       if (this.#config.resizeConfig) {
         processor.resize(this.#config.resizeConfig);
@@ -87,7 +95,6 @@ class ImageProcessor {
       await processor.toFormat(targetFormat, settings).toFile(outputPath);
 
       const convertedSize = (await stat(outputPath)).size;
-
       const compressionRatio = (1 - convertedSize / originalSize) * 100;
 
       logger(
@@ -110,7 +117,7 @@ class ImageProcessor {
         targetFormat.toUpperCase()
       )} 形式への変換失敗\n${error}`;
       logger(colors.red(errorMessage));
-      throw new Error(errorMessage);
+      throw error;
     }
   }
 
@@ -149,4 +156,12 @@ class ImageProcessor {
 
 export default ImageProcessor;
 
-new ImageProcessor();
+(async () => {
+  try {
+    await ImageProcessor.create();
+  } catch (err) {
+    logger(colors.red("画像処理で致命的なエラーが発生しました"));
+    logger(err);
+    process.exit(1);
+  }
+})();
