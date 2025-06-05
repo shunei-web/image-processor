@@ -1,28 +1,21 @@
 {
   "name": "image-processor",
-  "version": "1.0.0",
   "private": true,
+  "version": "0.0.0",
+  "type": "module",
   "scripts": {
-    "package-update": "curl https://get.volta.sh | bash && volta install node && volta pin node && volta install npm && volta pin npm && npx npm-check-updates -u && npm install && npm audit fix && npx depcheck",
-    "version": "volta -v && node -v && npm -v"
+    "exe": "node image-processor.js"
   },
   "volta": {
     "node": "22.13.0",
     "npm": "11.0.0"
   },
   "devDependencies": {
-    "@eslint/js": "9.18.0",
-    "ansi-colors": "4.1.3",
-    "cspell": "8.17.2",
-    "eslint": "9.18.0",
-    "fancy-log": "2.0.0",
-    "globals": "15.14.0",
-    "globule": "1.3.4",
-    "markuplint": "4.11.4",
-    "p-limit": "6.2.0",
-    "prettier": "3.4.2",
-    "pretty-bytes": "6.1.1",
-    "sharp": "0.33.5",
-    "typescript-eslint": "8.20.0"
+    "ansi-colors": "^4.1.3",
+    "fancy-log": "^2.0.0",
+    "globule": "^1.3.4",
+    "p-limit": "^6.2.0",
+    "pretty-bytes": "^7.0.0",
+    "sharp": "^0.34.2"
   }
 }
