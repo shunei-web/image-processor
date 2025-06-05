@@ -1,8 +1,9 @@
+import { mkdir, stat } from "fs/promises";
 import path from "path";
+
 import colors from "ansi-colors";
 import logger from "fancy-log";
 import globule from "globule";
-import { mkdir, stat } from "fs/promises";
 import sharp from "sharp";
 
 class ImageProcessor {
