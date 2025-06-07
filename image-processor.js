@@ -11,8 +11,8 @@ class ImageProcessor {
     sourceDirectory: "src",
     outputDirectory: "dist",
     resizeConfig: {
-      width: 1920,
-      height: 1920,
+      width: 3840,
+      height: 3840,
       fit: "inside",
       position: "center",
       withoutEnlargement: true,
