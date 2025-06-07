@@ -1,4 +1,4 @@
-import { mkdir, stat } from "fs/promises";
+import { mkdir, stat, rm } from "fs/promises";
 import path from "path";
 
 import colors from "ansi-colors";
@@ -53,6 +53,9 @@ class ImageProcessor {
       ...ImageProcessor.#DEFAULT_CONFIG,
       ...customConfig,
     };
+    await rm(config.outputDirectory, { recursive: true, force: true }).catch(
+      () => {}
+    );
     const processor = new ImageProcessor(config);
     await processor.#initialize();
     return processor;
