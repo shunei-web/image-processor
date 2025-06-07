@@ -21,15 +21,15 @@ Node.js + Sharp を使った**画像一括変換・リサイズ CLI ツール**�
 npm install
 ```
 
-2. 画像 ファイルを src フォルダに置く
-
-3. 必要に応じて、「image-processor.js」の設定（#DEFAULT_CONFIG）を変更
+2. 必要に応じて、「image-processor.js」の設定（#DEFAULT_CONFIG）を変更
 
    初期設定では、次のようになっています。
 
    - 入力型式：png、jpg、jpeg、webp、avif
    - 出力型式：webp
    - アスペクト比を維持し、縦横 3840px 以内に収まるサイズに圧縮（拡大はしない）
+
+3. 画像 ファイルを src フォルダに置く
 
 4. 実行
 
