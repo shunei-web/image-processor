@@ -10,6 +10,7 @@ class ImageProcessor {
   static #DEFAULT_CONFIG = {
     sourceDirectory: "src",
     outputDirectory: "dist",
+    filenameSuffix: "@2x",
     resizeConfig: {
       width: 3840,
       height: 3840,
@@ -134,10 +135,11 @@ class ImageProcessor {
     const relative = path.relative(this.#config.sourceDirectory, sourcePath);
     const basename = path.basename(relative, path.extname(relative));
     const dirname = path.dirname(relative);
+    const suffix = this.#config.filenameSuffix || "";
     return path.join(
       this.#config.outputDirectory,
       dirname,
-      `${basename}.${newFormat}`
+      `${basename}${suffix}.${newFormat}`
     );
   }
 
