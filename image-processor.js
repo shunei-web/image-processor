@@ -30,6 +30,14 @@ class ImageProcessor {
         webp: { quality: 80 },
         // avif: { quality: 60 },
       },
+      webp: {
+        webp: { quality: 80 },
+        // avif: { quality: 60 },
+      },
+      avif: {
+        webp: { quality: 80 },
+        // avif: { quality: 60 },
+      },
     },
   };
 
