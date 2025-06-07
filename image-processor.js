@@ -10,7 +10,7 @@ class ImageProcessor {
   static #DEFAULT_CONFIG = {
     sourceDirectory: "src",
     outputDirectory: "dist",
-    filenameSuffix: "@2x",
+    filenameSuffix: "",
     resizeConfig: {
       width: 3840,
       height: 3840,
